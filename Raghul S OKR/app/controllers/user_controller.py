@@ -24,7 +24,7 @@ async def authenticate_user(email: str, password: str):
     return {"access_token": access_token, "token_type": "bearer"}
 
 async def get_user_by_id(user_id: str):
-    user = await db["users"].find_one({"_id": ObjectId(user_id), "is_deleted": False})
+    user = await db["users"].find_one({"_id": user_id, "is_deleted": False})
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     # Convert ObjectId to string
@@ -39,14 +39,14 @@ async def get_all_users():
     return [UserSchema(**{**user, "_id": str(user["_id"])}) for user in users]
 
 async def update_user(user_id: str, update_data: dict):
-    user = await db["users"].find_one({"_id": ObjectId(user_id)})
+    user = await db["users"].find_one({"_id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     update_data["updated_at"] = datetime.utcnow()
-    await db["users"].update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
+    await db["users"].update_one({"_id": user_id}, {"$set": update_data})
     return await get_user_by_id(user_id)
 
 async def delete_user(user_id: str):
-    await db["users"].update_one({"_id": ObjectId(user_id)}, {"$set": {"is_deleted": True}})
+    await db["users"].update_one({"_id": user_id}, {"$set": {"is_deleted": True}})
     return {"message": "User deleted successfully"}
